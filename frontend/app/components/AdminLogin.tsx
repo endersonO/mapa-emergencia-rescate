@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "./useBodyScrollLock";
 
 interface AdminLoginProps {
   onCancel: () => void;
@@ -11,6 +13,9 @@ export default function AdminLogin({ onCancel, onSuccess }: AdminLoginProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  useBodyScrollLock(true);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -33,7 +38,9 @@ export default function AdminLogin({ onCancel, onSuccess }: AdminLoginProps) {
     }
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/60 p-4"
       role="dialog"
@@ -93,6 +100,7 @@ export default function AdminLogin({ onCancel, onSuccess }: AdminLoginProps) {
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

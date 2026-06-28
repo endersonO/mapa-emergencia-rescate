@@ -1286,7 +1286,9 @@ a:focus-visible,
 .e-person-modal-backdrop {
 	position: fixed;
 	inset: 0;
-	z-index: 200;
+	/* Capa de modales (alineado con los demás overlays z-[2000]); el detalle de
+	   persona se portalea a <body>, así que debe quedar por encima del mapa. */
+	z-index: 2000;
 	display: flex;
 	align-items: flex-start;
 	justify-content: center;

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   buildHospitalSlug,
@@ -16,6 +17,7 @@ import {
   type PublicHospitalSupplySummary,
 } from "@/lib/hospitals-meta";
 import { timeAgo } from "@/lib/format";
+import { useBodyScrollLock } from "./useBodyScrollLock";
 
 const ADMIN_STORAGE_KEY = "emergency:adminToken";
 const POLL_MS = 30_000;
@@ -427,6 +429,9 @@ function PatientDetailOverlay({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  useBodyScrollLock(true);
   const condition = PATIENT_CONDITION_META[patient.condition];
   const status = PATIENT_STATUS_META[patient.status];
   const hospitalLocation = [hospital.state, hospital.municipality]
@@ -472,7 +477,9 @@ function PatientDetailOverlay({
     };
   }, [onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -588,7 +595,8 @@ function PatientDetailOverlay({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

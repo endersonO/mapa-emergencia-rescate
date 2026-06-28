@@ -1,6 +1,27 @@
 import type { NextConfig } from "next";
+import os from "node:os";
+
+// `next dev`: orígenes autorizados a cargar recursos /_next/* desde otra IP
+// (p. ej. probar en el teléfono). Next 16 los bloquea cross-origin por defecto.
+// Autodetecta las IPv4 de la LAN de ESTA máquina, así funciona para cualquier
+// dev sin hardcodear su IP; admite además override por env (túneles tipo ngrok:
+// ALLOWED_DEV_ORIGINS="mi-tunel.ngrok.app,otra.host"). Inocuo en producción.
+function devOrigins(): string[] {
+  const fromEnv = (process.env.ALLOWED_DEV_ORIGINS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const lan: string[] = [];
+  for (const iface of Object.values(os.networkInterfaces())) {
+    for (const net of iface ?? []) {
+      if (net.family === "IPv4" && !net.internal) lan.push(net.address);
+    }
+  }
+  return [...new Set([...fromEnv, ...lan])];
+}
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: devOrigins(),
   // `output: "standalone"` empaqueta solo lo necesario (incluido un server.js
   // mínimo) en `.next/standalone`, para correr en Docker sin instalar todo
   // node_modules. Necesario para el despliegue en Hetzner/k3s (ver Dockerfile

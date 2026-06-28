@@ -10,6 +10,7 @@ import {
 } from "@/lib/donation-shared";
 import { useCreateDonation } from "@/hooks/donations";
 import { trackEvent } from "./openpanel";
+import { useBodyScrollLock } from "./useBodyScrollLock";
 import { useTurnstile } from "./useTurnstile";
 
 const SUGGESTED_AMOUNTS = [500, 1000, 2500, 5000, 10000] as const;
@@ -44,13 +45,7 @@ export function DonateModal({
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  useBodyScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

@@ -6,6 +6,8 @@ import MissingFoundForm, {
 } from "./MissingFoundForm";
 import ImageZoomLightbox from "./ImageZoomLightbox";
 import { mediaUrl } from "@/lib/api";
+import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "./useBodyScrollLock";
 
 interface MissingPerson {
   id: string;
@@ -76,6 +78,7 @@ export default function MissingPersonDetail({
 }: Props) {
   const phone = extractPhone(person.contact);
   const [showFoundForm, setShowFoundForm] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
   const [zoomOpen, setZoomOpen] = useState(false);
@@ -123,13 +126,13 @@ export default function MissingPersonDetail({
       }
     };
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
     };
   }, [goNext, goPrev, onClose, showFoundForm]);
+
+  useEffect(() => setMounted(true), []);
+  useBodyScrollLock(true);
 
   const isFound = person.status === "found";
   const url = shareUrl(person);
@@ -182,7 +185,9 @@ export default function MissingPersonDetail({
     [goNext, goPrev, hasNav],
   );
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -353,6 +358,7 @@ export default function MissingPersonDetail({
           onClose={() => setZoomOpen(false)}
         />
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }

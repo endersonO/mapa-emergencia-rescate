@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { REPORT_TYPES, REPORT_TYPE_KEYS, type ReportType } from "@/lib/types";
+import { useBodyScrollLock } from "./useBodyScrollLock";
 import { trackEvent } from "./openpanel";
 import { useTurnstile } from "./useTurnstile";
 
@@ -138,6 +140,9 @@ export default function ReportForm({
   const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  useBodyScrollLock(true);
 
   const useMyLocation = useCallback(() => {
     trackEvent("report_use_geolocation");
@@ -227,7 +232,9 @@ export default function ReportForm({
     }
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className={`fixed inset-0 z-[2000] flex items-end justify-center bg-slate-900/60 p-0 sm:items-center sm:p-4 ${
         hidden ? "hidden" : ""
@@ -502,6 +509,7 @@ export default function ReportForm({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

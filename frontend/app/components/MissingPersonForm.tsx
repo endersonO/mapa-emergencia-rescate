@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { trackEvent } from "./openpanel";
 import { useTurnstile } from "./useTurnstile";
+import { useBodyScrollLock } from "./useBodyScrollLock";
 
 export type MissingReportType = "missing" | "found";
 export type FoundPlace = "hospital" | "street";
@@ -222,15 +223,14 @@ export default function MissingPersonForm({
     setMounted(true);
   }, []);
 
+  useBodyScrollLock(true);
+
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onCancel();
     };
     document.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = prev;
       document.removeEventListener("keydown", onKey);
     };
   }, [onCancel]);
